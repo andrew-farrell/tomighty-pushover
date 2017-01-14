@@ -1,2 +1,2 @@
-# tomighty-pushover
-A Tomighty plugin that updates pushover with every state change
+# tomighty-todo.txt
+A Tomighty Pomodoro plugin which updates todo.txt on each state change
