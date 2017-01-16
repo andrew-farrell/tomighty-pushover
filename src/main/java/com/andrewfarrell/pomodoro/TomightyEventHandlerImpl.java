@@ -1,11 +1,18 @@
 package com.andrewfarrell.pomodoro;
 
+import net.pushover.client.*;
 import org.tomighty.Phase;
 import org.tomighty.bus.messages.timer.TimerFinished;
 import org.tomighty.bus.messages.timer.TimerInterrupted;
 import org.tomighty.bus.messages.timer.TimerStarted;
 import org.tomighty.time.Time;
-import net.pushover.client.*;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Created by andre_000 on 14/02/2016.
@@ -26,16 +33,31 @@ public class TomightyEventHandlerImpl implements TomightyEventHandler {
         toPushover(timerInterrupted.getPhase(), timerInterrupted.getTime(), "INTERRUPTED");
     }
 
-    private void toPushover(Phase phase, Time time, String label) {
+    public void toPushover(Phase phase, Time time, String label) {
         System.out.println(label);
 
         PushoverClient client = new PushoverRestClient();
 
+        JFileChooser fr = new JFileChooser();
+        FileSystemView fw = fr.getFileSystemView();
+
+        String fileStr = fw.getDefaultDirectory()+"\\tomighty-pomodoro.properties";
+
+
         try {
-            client.pushMessage(PushoverMessage.builderWithApiToken("MY_APP_API_TOKEN")
-                    .setUserId("USER_ID_TOKEN")
-                    .setMessage(phase.toString())
+            Properties defaultProps = new Properties();
+            FileInputStream in = new FileInputStream(fileStr);
+            defaultProps.load(in);
+            in.close();
+
+            Status result = client.pushMessage(PushoverMessage.builderWithApiToken(defaultProps.getProperty("MY_APP_API_TOKEN"))
+                    .setUserId(defaultProps.getProperty("USER_ID_TOKEN"))
+                    //.setDevice("andyiphone4S")
+                    .setMessage(phase.toString()+" "+label)
                     .build());
+
+            System.out.println(result);
+
 
 
 // push a message with optional fields
@@ -57,6 +79,10 @@ public class TomightyEventHandlerImpl implements TomightyEventHandler {
                 System.out.println(String.format("name: %s, id: %s", sound.getName(), sound.getId()));
             }*/
         } catch (PushoverException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
